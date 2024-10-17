@@ -1,0 +1,52 @@
+<project name="DescentRecursiveParser" default="dist" basedir=".">
+    <description>
+        Script Ant para compilar projetos com JFlex
+    </description>
+    <!-- Propriedades globais -->
+    <property name="jflexFile" value="scanner.jflex" />
+    <property name="mainClass" value="compiler.Main" />
+    <property name="scannerClassName" value="Scanner" />    
+    <property name="jarFile" value="drp.jar" />
+    <property name="src" location="src" />
+    <property name="tools" location="tools" />
+    <property name="jflex" location="${src}/jflex" />
+    <property name="build" location="build" />
+    <property name="dist" location="dist" />
+    <taskdef name="jflex" classname="jflex.anttask.JFlexTask" 
+            classpath="${tools}/jflex-full-1.9.1.jar" />
+    <target name="init">
+        <!-- Criar o diretório build, de construção se ele não existir -->
+        <mkdir dir="${build}" />
+    </target>
+    <target name="compile" depends="init" description="compilar as fontes">
+        <!-- Executar jflex sobre o arquivo JFlex definido -->
+        <jflex file="${jflex}/${jflexFile}" destdir="${src}" />
+        <!-- Compilar o código Java em ${src} para ${build} -->
+        <javac srcdir="${src}" destdir="${build}" />
+    </target>
+    <target name="dist" depends="compile" description="gerar a distribuição">
+        <!-- Criar o diretório dist se ele não existir -->
+        <mkdir dir="${dist}" />
+        <!-- Empacotar o que existir em ${build} em  um arquivo .jar -->
+        <jar jarfile="${dist}/${jarFile}" basedir="${build}">
+            <manifest>
+                <attribute name="Main-Class" value="${mainClass}" />
+            </manifest>
+        </jar>
+    </target>
+    <target name="jar" depends="dist" description="gerar distribuição"></target>
+    <target name="run" depends="dist" description="executar o programa">
+        <java classname="${mainClass}" classpath="${build}" fork="true">
+            <arg value="teste.input" />
+        </java>
+    </target>
+
+    <target name="clean" description="limpar arquivos gerados">
+        <!-- Apaga o que foi gerado em ${build} e ${dist} -->
+        <delete>
+            <fileset dir="${src}" includes="**/${scannerClassName}.java*"/>
+        </delete>
+        <delete dir="${build}" failonerror="false" />
+        <delete dir="${dist}" failonerror="false" />
+    </target>
+</project>
